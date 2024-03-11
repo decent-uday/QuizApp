@@ -11,7 +11,6 @@ import java.lang.annotation.*;
 public @interface ValidPassword {
     String message() default "Invalid password";
     Class<?>[] groups() default {};
-
     Class<? extends Payload>[] payload() default {};
 }
 

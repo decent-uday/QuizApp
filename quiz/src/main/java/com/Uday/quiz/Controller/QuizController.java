@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalTime;
 import java.util.*;
 
 @RestController
@@ -62,10 +63,10 @@ public class QuizController {
                 qn.put("Options", quiz.get(j - 1).getOptions());
                 qns.add(qn);
             }
-//            System.out.println(qns.size());
 
             return ResponseEntity.ok(qns);
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
