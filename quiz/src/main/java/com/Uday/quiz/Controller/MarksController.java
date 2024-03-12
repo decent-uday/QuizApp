@@ -5,6 +5,7 @@ import com.Uday.quiz.Model.Student;
 import com.Uday.quiz.Model.Submissions;
 import com.Uday.quiz.Repository.StudentRepo;
 import com.Uday.quiz.Repository.SubmissionRepo;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ public class MarksController {
 
     @Autowired
     private SubmissionRepo subRepo;
+    private boolean submitted = false;
 
     private ArrayList<Integer> nums = new ArrayList<Integer>
             (List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20));
@@ -35,7 +37,7 @@ public class MarksController {
         this.nums = nums;
     }
 
-    final HashMap<Integer, Integer> answers = new HashMap<>() {{
+    private static final HashMap<Integer, Integer> answers = new HashMap<>() {{
         put(1, 2);
         put(2, 1);
         put(3, 1);
@@ -68,6 +70,8 @@ public class MarksController {
                 Submissions submission = sub.get();
                 submission.setAns(ans);
                 subRepo.save(submission);
+                System.out.println("ans submitted bro!");
+                submitted = true;
             } else {
                 throw new QuizSubmissionException("Student not found for ID: " + _id);
             }
@@ -92,9 +96,9 @@ public class MarksController {
 
                 for (Integer i : nums) {
                     if (ans.get(i - 1).equals(answers.get(i))) {
-                        System.out.println(ans.get(i - 1).equals(answers.get(i)));
+//                        System.out.println(ans.get(i - 1).equals(answers.get(i)));
                         marks += 1;
-                        System.out.println(marks);
+//                        System.out.println(marks);
                     }
                 }
                 System.out.println(marks);
@@ -119,17 +123,22 @@ public class MarksController {
 
 
     @Async
-    public void quizDuration(LocalTime now) {
+    public void quizDuration(LocalTime now, HttpSession session) {
         LocalTime lt = now.plusMinutes(1);
         try{
-            while(true){
+            while(true) {
                 System.out.println("Im in thread class bro!!");
-                if(LocalTime.now().compareTo(lt)>=0){
-                    System.out.println("Time limit");
-                    submit(List.of(1, 1, 1, 2, 4, 1, 2, 1, 2, 1, 4, 2, 3, 3, 1, 1, 1, 2, 1, 1), 1);
+                if (!submitted) {
+                    if (LocalTime.now().compareTo(lt) >= 0) {
+                        System.out.println("Time limit");
+                        submit(Collections.EMPTY_LIST, (Integer) session.getAttribute("_id"));
+                        break;
+                    }
+                    Thread.sleep(10000);
+                }else{
+                    System.out.println("Already submitted bro! So thread broken.");
                     break;
                 }
-                Thread.sleep(10000);
             }
         }catch (InterruptedException e){
             e.printStackTrace();

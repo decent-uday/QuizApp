@@ -4,6 +4,7 @@ import com.Uday.quiz.Exception.DuplicateEmailException;
 import com.Uday.quiz.Exception.StudentAuthenticationException;
 import com.Uday.quiz.Model.Student;
 import com.Uday.quiz.Repository.StudentRepo;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -64,12 +65,13 @@ public class StudentController {
 
 
     @GetMapping("login")
-    public void login(String email, String password){
+    public void login(HttpSession session, String email, String password){
         List<Student> creds = StdRepo.findAll();
         boolean authenticated = false;
         System.out.println(creds);
         for (Student student : creds) {
             if (student.getEmail().equals(email) && student.getPassword().equals(password)) {
+                session.setAttribute("_id", student.get_id());
                 authenticated = true;
                 break;
             }
@@ -78,6 +80,6 @@ public class StudentController {
         if (!authenticated) {
             throw new StudentAuthenticationException("Authentication failed");
         }
-            mc.quizDuration(LocalTime.now());
+            mc.quizDuration(LocalTime.now(), session);
         }
     }
