@@ -124,7 +124,7 @@ public class MarksController {
 
     @Async
     public void quizDuration(LocalTime now, HttpSession session) {
-        LocalTime lt = now.plusMinutes(1);
+        LocalTime lt = now.plusMinutes(30);
         try{
             while(true) {
                 System.out.println("Im in thread class bro!!");
