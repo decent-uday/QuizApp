@@ -4,19 +4,18 @@ import com.Uday.quiz.Exception.DuplicateEmailException;
 import com.Uday.quiz.Exception.StudentAuthenticationException;
 import com.Uday.quiz.Model.Student;
 import com.Uday.quiz.Repository.StudentRepo;
+import com.Uday.quiz.Service.EmailService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @Validated
@@ -30,8 +29,11 @@ public class StudentController {
     @Autowired
     private MarksController mc;
 
+    @Autowired
+    private EmailService emailService;
+
     @GetMapping("allStuds")
-    public List allStuds(){
+    public List allStuds() {
         return StdRepo.findAll();
     }
 
@@ -65,21 +67,27 @@ public class StudentController {
 
 
     @GetMapping("login")
-    public void login(HttpSession session, String email, String password){
+    public void login(HttpSession session, String email, String password) {
         List<Student> creds = StdRepo.findAll();
         boolean authenticated = false;
         System.out.println(creds);
         for (Student student : creds) {
             if (student.getEmail().equals(email) && student.getPassword().equals(password)) {
+                session.setAttribute("email", student.getEmail());
                 session.setAttribute("_id", student.get_id());
                 authenticated = true;
                 break;
             }
         }
-
         if (!authenticated) {
             throw new StudentAuthenticationException("Authentication failed");
         }
-            mc.quizDuration(LocalTime.now(), session);
-        }
+        mc.quizDuration(LocalTime.now(), session);
     }
+
+    @GetMapping("/send-email")
+    public String sendEmail(HttpSession session) {
+        emailService.sendEmail((String) session.getAttribute("email"), "Quiz", "You have attempted the quiz bro! You will get your result soon bro!");
+        return "Email sent successfully!";
+    }
+}

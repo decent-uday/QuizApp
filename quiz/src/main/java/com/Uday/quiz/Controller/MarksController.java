@@ -5,6 +5,7 @@ import com.Uday.quiz.Model.Student;
 import com.Uday.quiz.Model.Submissions;
 import com.Uday.quiz.Repository.StudentRepo;
 import com.Uday.quiz.Repository.SubmissionRepo;
+import com.Uday.quiz.Service.EmailService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,9 @@ public class MarksController {
 
     @Autowired
     private SubmissionRepo subRepo;
+
+    @Autowired
+    private EmailService emailService;
     private boolean submitted = false;
 
     private ArrayList<Integer> nums = new ArrayList<Integer>
@@ -84,7 +88,7 @@ public class MarksController {
     }
 
     @PostMapping("result")
-    public ResponseEntity<Integer> Result(Integer _id){
+    public ResponseEntity<Integer> Result(HttpSession session, Integer _id){
         try{
             Optional<Submissions> sub = subRepo.findById(_id);
             int marks = 0;
@@ -113,6 +117,7 @@ public class MarksController {
                     throw new QuizSubmissionException("Student not found for ID: " + _id);
                 }
             }
+            session.setAttribute("marks", marks);
             return new ResponseEntity<>(marks, HttpStatus.OK);
         } catch (QuizSubmissionException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -120,7 +125,6 @@ public class MarksController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
 
     @Async
     public void quizDuration(LocalTime now, HttpSession session) {
@@ -143,5 +147,13 @@ public class MarksController {
         }catch (InterruptedException e){
             e.printStackTrace();
         }
+    }
+    @GetMapping("send-marks")
+    public String sendMarks(HttpSession session){
+        int marks = (int) session.getAttribute("marks");
+        String mark = String.valueOf(marks);
+
+        emailService.sendEmail((String) session.getAttribute("email"), "Your quiz result bro!", String.valueOf(session.getAttribute("marks")));
+        return "Email sent successfully!";
     }
 }
