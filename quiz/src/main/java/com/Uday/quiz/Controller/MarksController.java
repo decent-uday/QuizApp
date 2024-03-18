@@ -29,7 +29,7 @@ public class MarksController {
     private EmailService emailService;
     private boolean submitted = false;
 
-    private ArrayList<Integer> nums = new ArrayList<Integer>
+    private ArrayList<Integer> nums = new ArrayList<>
             (List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20));
 
     public ArrayList<Integer> getNums() {
